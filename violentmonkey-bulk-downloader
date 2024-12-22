@@ -1,0 +1,81 @@
+// ==UserScript==
+// @name        Humble bulk downloader
+// @namespace   Violentmonkey Scripts
+// @match       https://www.humblebundle.com/downloads*
+// @grant       none
+// @version     1.0
+// @author      rupel
+// @description 12/18/2024, 10:13:30 PM
+// ==/UserScript==
+
+console.log("HELLO VIOLENTMONKEY!!!!!!!!!!!!!!!!!!!!!!!");
+
+var _buttons = [ ]
+var _links = [ ]
+
+async function download() {
+
+   console.log("Starting to download links...");
+
+    let idx = _links.length;
+    // let idx = 10
+    while (idx > 0) {
+      let link = _links.pop();
+      // link = _links[idx]
+
+      console.log("Attempt download: ", link.href);
+      window.open(link.href, "_blank");
+
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for big download warning popup
+      let bigDlConfirmation = document.querySelector('.button-link.js-download')?.find(link => link.textContent.trim() === "Download anyway");
+
+      console.log("Extra confirmation: ", bigDlConfirmation);
+      if(bigDlConfirmation) {
+
+        console.log("Extra confirmation found: ", bigDlConfirmation);
+        bigDlConfirmation.click();
+      } else {
+        console.log("No extra confirmation found.");
+      }
+
+      console.log("Remaining: ", _links.map(link => link.href));
+      idx--;
+      await new Promise(resolve => setTimeout(resolve, 3000)); // Delay between downloads
+    }
+
+    // for (let link of _links) {
+    //     let event = new MouseEvent('click', {
+    //         view: window,
+    //         bubbles: true,
+    //         cancelable: true,
+    //     });
+
+        // console.log('Click: ', link.href);
+        // link.dispatchEvent(event); // Trigger the download
+}
+
+const observer = new MutationObserver(() => {
+    if(_buttons.length <= 0) {
+      _buttons = document.querySelectorAll('.download a');
+      _buttons.forEach(link => {
+          if (link) {
+              // console.log(link);
+              // console.log('Download URL:', link.href);
+              _links.push(link)
+
+              // Highlight the link
+              link.style.backgroundColor = 'yellow';
+          } else {
+              console.log('No link found.');
+          }
+      });
+    } else {
+      console.log("Found download links", _links);
+      observer.disconnect();
+      download();
+    }
+});
+
+// Start observing changes to the DOM
+observer.observe(document.body, { childList: true, subtree: true });
+
