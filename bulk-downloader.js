@@ -1,25 +1,18 @@
 // ==UserScript==
-// @name        Humble Downloader w/ ignore list
+// @name        Humble Downloader w/ ignore list - for downloads at GameDevMarket
 // @namespace   Violentmonkey Scripts
-// @match       https://www.humblebundle.com/downloads*
+// @match       https://www.gamedevmarket.net/user/external/purchases
 // @grant       none
 // @version     1.0
 // @author      rupel
 // @description 12/18/2024, 10:13:30 PM
 // ==/UserScript==
 
-console.log("HELLO VIOLENTMONKEY!");
+console.log("HELLO GAMEDEVMONKEY!");
 
 var _buttons = [ ]
 var _links = [ ]
 const _ignore = `
-  2point5dcharacterpieces_worldwar2.zip
-  animationsselect_thunder.zip
-  animationsselect_water.zip
-  cursedkingdoms_bosspack.zip
-  evfxblast.zip
-  evfxsanctuary.zip
-  evfxslash.zip
   `;
 
 
@@ -34,15 +27,7 @@ async function download() {
       if(!ignored_files.includes(filename)) {
         console.log("Attempt download ", filename, " ", link.href);
         window.open(link.href, "_blank");
-
         await new Promise(resolve => setTimeout(resolve, 30000)); // Delay between downloads
-        let bigDlConfirmation = document.querySelector('.button-link.js-download')?.find(link => link.textContent.trim() === "Download anyway");
-
-        if(bigDlConfirmation) {
-          console.log("Extra confirmation found: ", bigDlConfirmation);
-          bigDlConfirmation.click();
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for big download warning popup
-        }
       } else {
         console.log("IGNORE ", filename);
       }
@@ -50,10 +35,14 @@ async function download() {
     }
 }
 
+const downloadButton = document.querySelector('input[name="submit"][value="Download"]');
+
 const observer = new MutationObserver(() => {
     if(_buttons.length <= 0) {
-      _buttons = document.querySelectorAll('.download a');
-      _buttons.forEach(link => {
+      
+      downloadButton.click();
+
+      _buttons = _buttons.forEach(link => {
           if (link) {
               _links.push(link)
               // Highlight link
@@ -72,3 +61,4 @@ const observer = new MutationObserver(() => {
 // Start observing changes to the DOM
 observer.observe(document.body, { childList: true, subtree: true });
 
+ 
